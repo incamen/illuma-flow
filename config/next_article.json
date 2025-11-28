@@ -1,58 +1,58 @@
 {
-  "title": "Contoh artikel dari config",
-  "intro_heading": "Pembuka: contoh dari file config",
+  "title": "Hubungan Manusia dengan Al-Qur'an (1): Menyambut Wahyu",
+  "intro_heading": "Pembuka: aku dan Kitab yang selama ini di rak",
   "intro_paragraphs": [
-    "Ini hanya artikel percobaan untuk memastikan generator dari file config bekerja.",
-    "Nanti, bagian ini akan berisi pembuka sungguhan untuk tema yang kamu pilih."
+    "Selama ini aku sering melihat Al-Qur'an sebagai kitab suci yang ada di rak: dihormati, dibersihkan, kadang dibaca, tapi tidak selalu diajak bicara. Lebih sering aku mendengarkan suara orang dan layar, daripada suara yang keluar dari ayat-ayatnya.",
+    "Allah sendiri sudah menjelaskan dalam ayat-ayat-Nya apa hubungan Kitab ini dengan manusia sepertiku. Tulisan ini adalah usahaku untuk mendengar kembali penjelasan itu, lalu melihat: di mana seharusnya aku berdiri di hadapan Al-Qur'an."
   ],
   "slots": {
     "dasar_hukum": {
-      "heading": "1. Kedudukan sesuatu menurut ayat",
-      "summary": "Ayat sebagai pijakan utama tema ini",
+      "heading": "1. Kedudukan Al-Qur'an terhadap manusia",
+      "summary": "Qur'an yang menjelaskan dan turun di malam penuh berkah",
       "paragraphs": [
-        "Paragraf refleksi untuk slot dasar_hukum. Nanti di sini kita bicara bagaimana Allah meletakkan tema ini dalam ayat-ayat-Nya."
+        "Ayat-ayat ini mengingatkanku bahwa Al-Qur'an bukan sekadar kumpulan tulisan. Ia datang sebagai wahyu yang penuh hikmah, pada waktu yang Allah pilih sendiri, dengan tujuan yang jelas. Bukan ide satu orang, bukan hasil rapat manusia. Kalau Kitab ini datang dengan cara yang sedemikian terhormat, seharusnya aku tidak memperlakukannya sebagai bacaan sampingan."
       ]
     },
     "petunjuk": {
-      "heading": "2. Apa yang Allah jelaskan tentang tema ini",
-      "summary": "Ayat-ayat yang menjelaskan arah dan cara pandang",
+      "heading": "2. Apa yang Allah jelaskan lewat Kitab ini",
+      "summary": "Kitab yang mengeluarkan manusia dari gelap ke terang dan menjadi berita besar bagi siapa saja",
       "paragraphs": [
-        "Paragraf refleksi untuk slot petunjuk. Di sini bisa ditulis bagaimana ayat-ayat tersebut mengubah cara kita melihat masalah."
+        "Al-Qur'an datang bukan hanya untuk orang-orang tertentu. Isinya adalah berita besar dan peringatan yang ingin mengeluarkan manusia dari kegelapan cara pandang dan hidup menuju cahaya yang lebih jernih. Pertanyaannya untuk diriku: apakah aku membiarkan diriku disentuh cahaya itu, atau tetap betah berjalan dengan pandanganku sendiri?"
       ]
     },
     "perintah": {
-      "heading": "3. Apa yang diminta Allah dariku",
-      "summary": "Ayat-ayat yang berisi tuntunan dan ajakan",
+      "heading": "3. Apa yang diminta Allah dariku lewat wahyu ini",
+      "summary": "Petunjuk yang jika diikuti, kembali kepada diriku sendiri",
       "paragraphs": [
-        "Paragraf refleksi untuk slot perintah. Di sini kita tulis langkah-langkah yang Allah minta setelah tema ini dipahami."
+        "Dari ayat-ayat perintah aku belajar, ketika aku mengikuti petunjuk Al-Qur'an, yang pertama merasakan hasilnya adalah diriku sendiri. Allah sudah mendekatkan kalimat-Nya dengan bahasa yang bisa kupahami, dan menjadikan Kitab ini sebagai kemuliaan untuk umat ini. Suatu hari, kemuliaan ini akan ditanyakan: apa yang kulakukan dengannya?"
       ]
     },
     "larangan": {
-      "heading": "4. Apa yang perlu kuhindari",
-      "summary": "Ayat-ayat peringatan dan batasan yang tidak boleh dilanggar",
+      "heading": "4. Apa yang perlu kuhindari terkait Al-Qur'an",
+      "summary": "Jangan mencari pegangan selain apa yang sudah Allah turunkan",
       "paragraphs": [
-        "Paragraf refleksi untuk slot larangan. Bagian ini mengingatkan hal-hal yang bisa merusak hati dan arah hidup jika diabaikan."
+        "Larangan di ayat-ayat larangan menegurku pelan: jangan sampai aku mencari pegangan hidup di luar apa yang Allah turunkan, seakan-akan Kitab ini belum cukup. Jangan sampai aku merasa nyaman mengikuti pendapat dan perasaanku sendiri, lalu pelan-pelan menjauh dari keterangan yang sebenarnya sudah terang. Di titik ini, aku diingatkan untuk jujur: selama ini aku lebih banyak mengikuti keterangan siapa?"
       ]
     },
     "contoh": {
-      "heading": "5. Contoh orang yang menjawab panggilan ayat",
-      "summary": "Ayat-ayat kisah sebagai cermin",
+      "heading": "5. Contoh orang yang hidup bersama wahyu",
+      "summary": "Teladan yang menjadikan Al-Qur'an sebagai jalan hidup",
       "paragraphs": [
-        "Paragraf refleksi untuk slot contoh. Kita melihat bagaimana orang-orang sebelum kita merespons tema yang sama."
+        "Nabi tidak hanya menyampaikan ayat-ayat, tapi berjalan di atasnya: menjadikan Al-Qur'an sebagai jalan, tugas, dan sumber keyakinan. Aku tidak mungkin menyamai beliau, tetapi ayat-ayat teladan mengingatkanku bahwa kedekatan dengan Al-Qur'an bukan hanya urusan membaca, melainkan urusan sikap: sejauh mana aku mau menata langkahku agar searah dengan petunjuk yang kubaca."
       ]
     },
     "sejarah": {
-      "heading": "6. Pola sejarah yang selalu berulang",
-      "summary": "Ayat-ayat tentang pola yang kembali terjadi",
+      "heading": "6. Pola yang berulang ketika Al-Qur'an ditolak",
+      "summary": "Petunjuk datang, lalu sebagian orang menolaknya",
       "paragraphs": [
-        "Paragraf refleksi untuk slot sejarah. Di sini kita melihat pola umat-umat terdahulu agar tidak mengulang kesalahan yang sama."
+        "Sejarah yang diceritakan Al-Qur'an bukan hanya tentang kaum yang jauh di masa lalu. Polanya selalu sama: datang petunjuk, lalu ada yang menerima dengan rendah hati, dan ada yang menolak sambil merasa paling benar. Pertanyaannya: di barisan mana aku berdiri sekarang?"
       ]
     },
     "pernyataan": {
-      "heading": "7. Kalimat Allah yang ingin kupegang sebagai sikap diri",
-      "summary": "Ayat penegasan yang menjadi pegangan pribadi",
+      "heading": "7. Pernyataan Allah yang ingin kupegang sebagai sikap diri",
+      "summary": "Panggilan lembut untuk kembali sebelum terlambat",
       "paragraphs": [
-        "Paragraf refleksi untuk slot pernyataan. Di sini kita merangkum semua ayat ke dalam sikap dan komitmen pribadi yang sederhana namun jelas."
+        "Ayat-ayat penegasan terasa seperti pintu yang dibuka lebar: seberapa jauh pun aku melangkah menjauh, Allah masih memanggil dengan lembut agar kembali dan mengikuti sebaik-baik ajaran yang diturunkan. Untuk diriku sendiri, aku tidak ingin terus membiarkan Al-Qur'an hanya menjadi hiasan di rak. Aku ingin mulai menyediakan waktu khusus, walau sebentar, untuk membaca ayat-ayatnya beserta artinya, lalu bertanya dengan jujur: bagian mana dari hidupku yang hari ini sedang disentuh oleh ayat ini?"
       ]
     }
   }
