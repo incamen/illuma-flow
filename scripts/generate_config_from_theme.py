@@ -9,7 +9,9 @@ THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
 
 HF_API_TOKEN = os.environ["HF_API_TOKEN"]
-MODEL_ID = "google/flan-t5-large"  # boleh diganti model instruksi lain
+
+# MODEL yang dipakai: FLAN-T5 LARGE (bukan falcon / mistral)
+MODEL_ID = "google/flan-t5-large"
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL_ID}"
 
 
@@ -101,19 +103,19 @@ def build_prompt(theme_text: str) -> str:
 def call_hf_api(prompt: str) -> str:
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
     payload = {
-    "inputs": prompt,
-    "parameters": {
-        "max_new_tokens": 1024,
-        "temperature": 0.7
-    },
-    "options": {
-        "wait_for_model": True
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 1024,
+            "temperature": 0.7
+        },
+        "options": {
+            "wait_for_model": True
+        }
     }
-}
-    resp = requests.post(API_URL, headers=headers, json=payload, timeout=90)
+    resp = requests.post(API_URL, headers=headers, json=payload, timeout=120)
     resp.raise_for_status()
     data = resp.json()
-    # Biasanya: [{"generated_text": "..."}]
+    # Format umum Inference API: [{"generated_text": "..."}]
     if isinstance(data, list) and data and "generated_text" in data[0]:
         return data[0]["generated_text"]
     if isinstance(data, dict) and "generated_text" in data:
@@ -135,6 +137,7 @@ def main():
     theme_text = load_theme_text()
     prompt = build_prompt(theme_text)
 
+    print("MODEL:", MODEL_ID)
     print("Mengirim prompt ke Hugging Face...")
     raw_output = call_hf_api(prompt)
     print("Respon mentah (dipotong 400 karakter):")
