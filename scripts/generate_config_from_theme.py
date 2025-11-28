@@ -9,7 +9,7 @@ THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
 
 HF_API_TOKEN = os.environ["HF_API_TOKEN"]
-MODEL_ID = "tiiuae/falcon-7b-instruct"  # boleh diganti model instruksi lain
+MODEL_ID = "google/flan-t5-large"  # boleh diganti model instruksi lain
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL_ID}"
 
 
