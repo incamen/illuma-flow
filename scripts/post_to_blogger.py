@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 
 # Ambil nilai dari GitHub Secrets
@@ -6,6 +7,12 @@ BLOG_ID = os.environ["BLOGGER_BLOG_ID"]
 CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
 CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
 REFRESH_TOKEN = os.environ["BLOGGER_REFRESH_TOKEN"]
+
+# Path dasar
+SCRIPT_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
+CONTENT_PATH = os.path.join(ROOT_DIR, "content", "next_post.html")
 
 
 def get_access_token():
@@ -23,19 +30,23 @@ def get_access_token():
     return resp.json()["access_token"]
 
 
-def main():
-    # Tentukan path ke file content/next_post.html
-    script_dir = os.path.dirname(__file__)
-    content_path = os.path.join(script_dir, "..", "content", "next_post.html")
-    content_path = os.path.abspath(content_path)
+def load_title_from_config(default="Artikel dari next_post.html"):
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+        title = cfg.get("title") or default
+        return title
+    except Exception:
+        return default
 
+
+def main():
     # Baca isi HTML artikel dari file
-    with open(content_path, "r", encoding="utf-8") as f:
+    with open(CONTENT_PATH, "r", encoding="utf-8") as f:
         body_html = f.read()
 
-    # Untuk sementara, judul kita isi manual.
-    # Nanti bisa dibuat lebih pintar (misal ambil dari <h1>/<h2> pertama).
-    title = "Artikel dari next_post.html"
+    # Judul diambil dari config
+    title = load_title_from_config()
 
     access_token = get_access_token()
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
