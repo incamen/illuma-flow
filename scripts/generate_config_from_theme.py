@@ -101,12 +101,15 @@ def build_prompt(theme_text: str) -> str:
 def call_hf_api(prompt: str) -> str:
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
     payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 1024,
-            "temperature": 0.7
-        }
+    "inputs": prompt,
+    "parameters": {
+        "max_new_tokens": 1024,
+        "temperature": 0.7
+    },
+    "options": {
+        "wait_for_model": True
     }
+}
     resp = requests.post(API_URL, headers=headers, json=payload, timeout=90)
     resp.raise_for_status()
     data = resp.json()
