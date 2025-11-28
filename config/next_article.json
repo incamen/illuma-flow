@@ -1,0 +1,59 @@
+{
+  "title": "Contoh artikel dari config",
+  "intro_heading": "Pembuka: contoh dari file config",
+  "intro_paragraphs": [
+    "Ini hanya artikel percobaan untuk memastikan generator dari file config bekerja.",
+    "Nanti, bagian ini akan berisi pembuka sungguhan untuk tema yang kamu pilih."
+  ],
+  "slots": {
+    "dasar_hukum": {
+      "heading": "1. Kedudukan sesuatu menurut ayat",
+      "summary": "Ayat sebagai pijakan utama tema ini",
+      "paragraphs": [
+        "Paragraf refleksi untuk slot dasar_hukum. Nanti di sini kita bicara bagaimana Allah meletakkan tema ini dalam ayat-ayat-Nya."
+      ]
+    },
+    "petunjuk": {
+      "heading": "2. Apa yang Allah jelaskan tentang tema ini",
+      "summary": "Ayat-ayat yang menjelaskan arah dan cara pandang",
+      "paragraphs": [
+        "Paragraf refleksi untuk slot petunjuk. Di sini bisa ditulis bagaimana ayat-ayat tersebut mengubah cara kita melihat masalah."
+      ]
+    },
+    "perintah": {
+      "heading": "3. Apa yang diminta Allah dariku",
+      "summary": "Ayat-ayat yang berisi tuntunan dan ajakan",
+      "paragraphs": [
+        "Paragraf refleksi untuk slot perintah. Di sini kita tulis langkah-langkah yang Allah minta setelah tema ini dipahami."
+      ]
+    },
+    "larangan": {
+      "heading": "4. Apa yang perlu kuhindari",
+      "summary": "Ayat-ayat peringatan dan batasan yang tidak boleh dilanggar",
+      "paragraphs": [
+        "Paragraf refleksi untuk slot larangan. Bagian ini mengingatkan hal-hal yang bisa merusak hati dan arah hidup jika diabaikan."
+      ]
+    },
+    "contoh": {
+      "heading": "5. Contoh orang yang menjawab panggilan ayat",
+      "summary": "Ayat-ayat kisah sebagai cermin",
+      "paragraphs": [
+        "Paragraf refleksi untuk slot contoh. Kita melihat bagaimana orang-orang sebelum kita merespons tema yang sama."
+      ]
+    },
+    "sejarah": {
+      "heading": "6. Pola sejarah yang selalu berulang",
+      "summary": "Ayat-ayat tentang pola yang kembali terjadi",
+      "paragraphs": [
+        "Paragraf refleksi untuk slot sejarah. Di sini kita melihat pola umat-umat terdahulu agar tidak mengulang kesalahan yang sama."
+      ]
+    },
+    "pernyataan": {
+      "heading": "7. Kalimat Allah yang ingin kupegang sebagai sikap diri",
+      "summary": "Ayat penegasan yang menjadi pegangan pribadi",
+      "paragraphs": [
+        "Paragraf refleksi untuk slot pernyataan. Di sini kita merangkum semua ayat ke dalam sikap dan komitmen pribadi yang sederhana namun jelas."
+      ]
+    }
+  }
+}
