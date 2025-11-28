@@ -1,7 +1,7 @@
 import os
 import requests
-import textwrap
 
+# Ambil nilai dari GitHub Secrets
 BLOG_ID = os.environ["BLOGGER_BLOG_ID"]
 CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
 CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
@@ -24,22 +24,20 @@ def get_access_token():
 
 
 def main():
+    # Tentukan path ke file content/next_post.html
+    script_dir = os.path.dirname(__file__)
+    content_path = os.path.join(script_dir, "..", "content", "next_post.html")
+    content_path = os.path.abspath(content_path)
+
+    # Baca isi HTML artikel dari file
+    with open(content_path, "r", encoding="utf-8") as f:
+        body_html = f.read()
+
+    # Untuk sementara, judul kita isi manual.
+    # Nanti bisa dibuat lebih pintar (misal ambil dari <h1>/<h2> pertama).
+    title = "Artikel dari next_post.html"
+
     access_token = get_access_token()
-
-    # Konten dummy dulu – nanti diganti artikel 7 slot
-    title = "TEST ILLUMA AUTOPOST (hapus setelah cek)"
-    body_html = textwrap.dedent("""
-        <h2>Ini postingan uji coba dari GitHub Actions</h2>
-        <p>
-          Jika kamu melihat artikel ini muncul di blog ILLUMA tanpa kamu tulis manual,
-          berarti koneksi GitHub Actions → Blogger API sudah berhasil.
-        </p>
-        <p>
-          Setelah pengujian ini, isi artikel akan diganti dengan format kajian
-          ILLUMA (7 jalinan ayat + renungan).
-        </p>
-    """)
-
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
 
     headers = {
