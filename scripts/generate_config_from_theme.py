@@ -20,15 +20,22 @@ def load_theme_text():
 
 
 def main():
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    if not HF_TOKEN:
+        print("ERROR: HF_TOKEN tidak ditemukan di environment.")
+        return
+
     theme_text = load_theme_text()
     print("Tema yang dikirim ke Space:")
     print(theme_text)
 
-    client = Client(SPACE_NAME)
+    client = Client(SPACE_NAME, hf_token=HF_TOKEN)   # <── WAJIB
+
     result = client.predict(
         theme_text=theme_text,
         api_name=API_NAME,
     )
+
 
     # Space mengembalikan string JSON
     if isinstance(result, str):
