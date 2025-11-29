@@ -20,6 +20,8 @@ def load_theme_text():
 
 
 def main():
+    import requests
+
     HF_TOKEN = os.getenv("HF_TOKEN")
     if not HF_TOKEN:
         print("ERROR: HF_TOKEN tidak ditemukan di environment.")
@@ -29,21 +31,39 @@ def main():
     print("Tema yang dikirim ke Space:")
     print(theme_text)
 
-    client = Client(SPACE_NAME, token=HF_TOKEN)   # <── WAJIB
+    # Coba pakai gradio_client Client dulu (lebih ringkas)
+    try:
+        client = Client(SPACE_NAME, token=HF_TOKEN)
+        # panggil predict dengan argumen posisi (bukan keyword) — banyak versi client mengharapkan ini
+        result = client.predict(theme_text, api_name=API_NAME)
+        print("Menggunakan gradio_client.Client --> OK")
+    except Exception as e:
+        print("gradio_client.Client gagal, coba fallback HTTP:", repr(e))
+        # Fallback: panggil inference API HF langsung
+        api_url = f"https://api-inference.huggingface.co/spaces/{SPACE_NAME}/run/predict"
+        headers = {
+            "Authorization": f"Bearer {HF_TOKEN}",
+            "Content-Type": "application/json",
+        }
+        payload = {"data": [theme_text], "api_name": API_NAME}
+        resp = requests.post(api_url, headers=headers, json=payload, timeout=60)
+        resp.raise_for_status()
+        result = resp.json()
 
-    result = client.predict(
-        theme_text=theme_text,
-        api_name=API_NAME,
-    )
-
-
-    # Space mengembalikan string JSON
+    # Space biasanya mengembalikan string JSON atau struktur JSON
     if isinstance(result, str):
         cfg = json.loads(result)
+    elif isinstance(result, dict) and "data" in result and isinstance(result["data"], list) and len(result["data"])>0:
+        # beberapa endpoint HF mengembalikan {"data":[<string-json>]}
+        first = result["data"][0]
+        if isinstance(first, str):
+            cfg = json.loads(first)
+        else:
+            cfg = first
     else:
         cfg = result
 
-    # ==== PERTAHANKAN ayat_refs LAMA JIKA ADA ====
+    # ==== pertahankan ayat_refs lama jika ada ====
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
