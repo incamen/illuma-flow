@@ -50,18 +50,17 @@ def main():
         resp.raise_for_status()
         result = resp.json()
 
-    # Space biasanya mengembalikan string JSON atau struktur JSON
+    # handle output Space (string / dict / tuple)
+    if isinstance(result, tuple):
+        result = result[0]
+
     if isinstance(result, str):
         cfg = json.loads(result)
-    elif isinstance(result, dict) and "data" in result and isinstance(result["data"], list) and len(result["data"])>0:
-        # beberapa endpoint HF mengembalikan {"data":[<string-json>]}
-        first = result["data"][0]
-        if isinstance(first, str):
-            cfg = json.loads(first)
-        else:
-            cfg = first
-    else:
+    elif isinstance(result, dict):
         cfg = result
+    else:
+    raise ValueError(f"Tidak dapat mengurai response Space: {type(result)}")
+
 
     # ==== pertahankan ayat_refs lama jika ada ====
     if os.path.exists(CONFIG_PATH):
@@ -79,7 +78,7 @@ def main():
         json.dump(cfg, f, ensure_ascii=False, indent=2)
 
     print("Berhasil menulis config/next_article.json dari Space.")
-    print("Judul:", cfg.get("title", "(tanpa judul)"))
+    print("Judul:", cfg.get("title", "(tanpa judul)") if isinstance(cfg, dict) else "(cfg bukan dict)")
 
 
 if __name__ == "__main__":
