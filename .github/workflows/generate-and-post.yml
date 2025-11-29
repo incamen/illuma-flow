@@ -19,10 +19,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate next_article.json from theme (Hugging Face)
+      - name: Generate next_article.json from theme (HF Space)
         run: python scripts/generate_config_from_theme.py
-        env:
-          HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
 
       - name: Generate next_post.html from config
         run: python scripts/generate_from_theme.py
