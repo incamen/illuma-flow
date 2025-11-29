@@ -8,112 +8,63 @@ ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
 
-SPACE_NAME = "Penerang/Teuing-Ah"
-FUNCTION_NAME = "generate_config"     # sesuai gradio 6: api/invoke/<name>
+SPACE_API = "https://Penerang-Teuing-Ah.hf.space/generate_config"  # REST API FastAPI kamu
 
 
-def load_theme_text():
+def load_theme():
     if not os.path.exists(THEME_PATH):
-        return "(file config/next_theme.txt belum ada)"
+        return {"title": "", "description": "", "author": ""}
+
     with open(THEME_PATH, "r", encoding="utf-8") as f:
-        return f.read().strip()
+        lines = f.read().strip().split("\n")
 
-
-def call_gradio6_function(theme_text, HF_TOKEN):
-    """
-    Memanggil custom function di Gradio 6 via endpoint:
-    POST /api/invoke/<function_name>
-    """
-    url = f"https://huggingface.co/spaces/{SPACE_NAME}/api/invoke/{FUNCTION_NAME}"
-
-    headers = {
-        "Authorization": f"Bearer {HF_TOKEN}",
-        "Content-Type": "application/json"
+    # Format file next_theme.txt:
+    # line 1 → title
+    # line 2 → description
+    # line 3 → author
+    return {
+        "title": lines[0] if len(lines) > 0 else "",
+        "description": lines[1] if len(lines) > 1 else "",
+        "author": lines[2] if len(lines) > 2 else ""
     }
 
-    payload = {
-        "data": {
-            "text": theme_text
-        }
-    }
 
-    print("Mengirim request ke:", url)
-
-    resp = requests.post(url, headers=headers, json=payload, timeout=90)
+def call_space_rest_api(payload, token):
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    print("Mengirim request ke:", SPACE_API)
+    resp = requests.post(SPACE_API, headers=headers, json=payload, timeout=60)
     resp.raise_for_status()
 
-    raw = resp.json()
-    print("Raw response:", str(raw)[:500])
-
-    if "data" not in raw:
-        raise ValueError("Response tidak memiliki field 'data'")
-
-    return raw["data"]
-
-
-def normalize_result(result):
-    """
-    Gradio 6 selalu return:
-    { "data": [ ... ] }
-    Jadi result sudah berupa array, kita ambil elemen pertama.
-    """
-    if isinstance(result, list) and len(result) > 0:
-        result = result[0]
-    else:
-        raise ValueError(
-            f"Format result salah. Hasil: {repr(result)[:300]}"
-        )
-
-    # Convert JSON string -> dict
-    if isinstance(result, str):
-        try:
-            return json.loads(result)
-        except Exception as e:
-            raise ValueError(f"String bukan JSON valid: {e}")
-
-    if isinstance(result, dict):
-        return result
-
-    raise ValueError(f"Format elemen tidak dikenali: {type(result)}")
+    return resp.json()
 
 
 def main():
     HF_TOKEN = os.getenv("HF_TOKEN")
     if not HF_TOKEN:
-        print("ERROR: Tidak ada HF_TOKEN di environment.")
+        print("ERROR: HF_TOKEN tidak ditemukan di environment.")
         return
 
-    theme_text = load_theme_text()
-    print("Tema yang dikirim ke Space:\n", theme_text, "\n")
+    theme = load_theme()
 
-    # === Panggil Gradio 6 ===
+    print("Theme loaded:")
+    print(theme)
+
+    # === Panggil REST API FastAPI Space ===
     try:
-        raw_data = call_gradio6_function(theme_text, HF_TOKEN)
+        response = call_space_rest_api(theme, HF_TOKEN)
     except Exception as e:
-        print("Gagal memanggil Gradio 6:", repr(e))
+        print("Gagal memanggil Space:", e)
         return
 
-    # === Normalisasi ===
-    cfg = normalize_result(raw_data)
+    print("Response:")
+    print(response)
 
-    # === Pertahankan ayat_refs lama ===
-    if os.path.exists(CONFIG_PATH):
-        try:
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
-                old_cfg = json.load(f_old)
-
-            if "ayat_refs" in old_cfg and "ayat_refs" not in cfg:
-                cfg["ayat_refs"] = old_cfg["ayat_refs"]
-                print("→ Menyalin ayat_refs dari config lama.")
-        except Exception as e:
-            print("Gagal membaca config lama:", e)
-
-    # === Simpan ===
+    # Simpan hasil ke next_article.json
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump(cfg, f, ensure_ascii=False, indent=2)
+        json.dump(response, f, ensure_ascii=False, indent=2)
 
-    print("\nBerhasil menulis config/next_article.json")
-    print("Judul:", cfg.get("title", "(tanpa judul)"))
+    print("Config berhasil ditulis:", CONFIG_PATH)
 
 
 if __name__ == "__main__":
