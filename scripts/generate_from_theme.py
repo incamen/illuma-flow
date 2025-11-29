@@ -68,17 +68,20 @@ def build_html(cfg: dict) -> str:
                     f"<!-- error mengambil ayat {ref}: {e} -->"
                 )
 
-        if blocks_html_list:
-            blocks_html = "\n".join(blocks_html_list)
-        else:
-            blocks_html = f"<!-- Belum ada ayat untuk slot {key} -->"
+            if blocks_html_list:
+        blocks_html = "\n".join(blocks_html_list)
+    else:
+        blocks_html = f"<!-- Belum ada ayat untuk slot {key} -->"
 
-        parts.append(
-            f'<details class="ayat-accordion" open>\n'
-            f"  <summary>{summary}</summary>\n"
-            f"{blocks_html}\n"
-            f"</details>"
-        )
+    # Hanya slot "pernyataan" yang dibuka default, lainnya tertutup
+    open_attr = ' open' if key == "pernyataan" else ''
+
+    parts.append(
+        f'<details class="ayat-accordion"{open_attr}>\n'
+        f"  <summary>{summary}</summary>\n"
+        f"{blocks_html}\n"
+        f"</details>"
+    )
 
         for p in paragraphs:
             parts.append(f"<p>\n{p}\n</p>")
