@@ -1,7 +1,8 @@
 import os
 import json
 
-# Lokasi root repo (folder illuma-flow)
+from verse_utils import get_verse_block_html
+
 SCRIPT_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
@@ -17,15 +18,16 @@ def load_config():
 def build_html(cfg: dict) -> str:
     parts = []
 
-    # Judul artikel ditetapkan nanti di post_to_blogger (cfg["title"])
+    # Pembuka
     intro_heading = cfg.get("intro_heading", "Pembuka")
     intro_pars = cfg.get("intro_paragraphs", [])
-
     parts.append(f"<h2>{intro_heading}</h2>")
     for p in intro_pars:
         parts.append(f"<p>\n{p}\n</p>")
 
     slots = cfg.get("slots", {})
+    ayat_refs_cfg = cfg.get("ayat_refs", {})
+
     order = [
         "dasar_hukum",
         "petunjuk",
@@ -48,14 +50,33 @@ def build_html(cfg: dict) -> str:
         if heading:
             parts.append(f"<h2>{heading}</h2>")
 
-        # Placeholder untuk blok ayat (nanti bisa diisi otomatis/manual)
-        parts.append(f"<!-- SLOT: {key} -->")
+        # Ambil referensi ayat untuk slot ini
+        refs = ayat_refs_cfg.get(key, [])
+        blocks_html_list = []
+
+        for ref in refs:
+            # ref bisa [surah, ayat] atau [surah, ayat_awal, ayat_akhir]
+            try:
+                if isinstance(ref, list) and len(ref) >= 2:
+                    chapter = ref[0]
+                    v_start = ref[1]
+                    v_end = ref[2] if len(ref) >= 3 else ref[1]
+                    block_html = get_verse_block_html(chapter, v_start, v_end)
+                    blocks_html_list.append(block_html)
+            except Exception as e:
+                blocks_html_list.append(
+                    f"<!-- error mengambil ayat {ref}: {e} -->"
+                )
+
+        if blocks_html_list:
+            blocks_html = "\n".join(blocks_html_list)
+        else:
+            blocks_html = f"<!-- Belum ada ayat untuk slot {key} -->"
+
         parts.append(
             f'<details class="ayat-accordion" open>\n'
             f"  <summary>{summary}</summary>\n"
-            f"  <blockquote class=\"quran-verse\">\n"
-            f"    <!-- Tambahkan blok ayat untuk slot {key} di sini -->\n"
-            f"  </blockquote>\n"
+            f"{blocks_html}\n"
             f"</details>"
         )
 
