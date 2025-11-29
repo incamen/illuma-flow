@@ -26,26 +26,28 @@ def main():
     print(theme_text)
 
     client = Client(SPACE_NAME)
-    # Panggil fungsi generate_config di Space
     result = client.predict(
         theme_text=theme_text,
         api_name=API_NAME,
     )
 
-    # Space mengembalikan string JSON, kita parse ke dict
     if isinstance(result, str):
         cfg = json.loads(result)
     else:
-        # Kalau sudah dict langsung saja
         cfg = result
 
-    # Simpan ke next_article.json
+    # Tambahan: bawa ayat_refs lama kalau ada
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
+                old_cfg = json.load(f_old)
+            if "ayat_refs" in old_cfg and "ayat_refs" not in cfg:
+                cfg["ayat_refs"] = old_cfg["ayat_refs"]
+        except Exception as e:
+            print("Peringatan: gagal memuat ayat_refs lama:", e)
+
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
 
     print("Berhasil menulis config/next_article.json dari Space.")
     print("Judul:", cfg.get("title", "(tanpa judul)"))
-
-
-if __name__ == "__main__":
-    main()
