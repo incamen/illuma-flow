@@ -9,7 +9,7 @@ THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
 
 SPACE_NAME = "Penerang/Teuing-Ah"
-API_NAME = "/api_generate"  # dari docs API Space
+API_NAME = "/api_generate"  # nama endpoint di Space
 
 
 def load_theme_text():
@@ -31,26 +31,22 @@ def main():
     print("Tema yang dikirim ke Space:")
     print(theme_text)
 
-    # Coba pakai gradio_client Client dulu (lebih ringkas)
+    # ============ Panggil API Space ============
     try:
         client = Client(SPACE_NAME, token=HF_TOKEN)
-        # panggil predict dengan argumen posisi (bukan keyword) — banyak versi client mengharapkan ini
         result = client.predict(theme_text, api_name=API_NAME)
         print("Menggunakan gradio_client.Client --> OK")
     except Exception as e:
-        print("gradio_client.Client gagal, coba fallback HTTP:", repr(e))
-        # Fallback: panggil inference API HF langsung
+        print("gradio_client.Client gagal, fallback HTTP:", repr(e))
         api_url = f"https://api-inference.huggingface.co/spaces/{SPACE_NAME}/run/predict"
-        headers = {
-            "Authorization": f"Bearer {HF_TOKEN}",
-            "Content-Type": "application/json",
-        }
+        headers = {"Authorization": f"Bearer {HF_TOKEN}", "Content-Type": "application/json"}
         payload = {"data": [theme_text], "api_name": API_NAME}
         resp = requests.post(api_url, headers=headers, json=payload, timeout=60)
         resp.raise_for_status()
         result = resp.json()
+    # ============================================
 
-    # handle output Space (string / dict / tuple)
+    # ===== parse output (tuple / str / dict) =====
     if isinstance(result, tuple):
         result = result[0]
 
@@ -59,10 +55,10 @@ def main():
     elif isinstance(result, dict):
         cfg = result
     else:
-    raise ValueError(f"Tidak dapat mengurai response Space: {type(result)}")
+        raise ValueError(f"Tidak dapat mengurai response Space: {type(result)}")
+    # ============================================
 
-
-    # ==== pertahankan ayat_refs lama jika ada ====
+    # ============ pertahankan ayat_refs ============
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
@@ -72,13 +68,13 @@ def main():
                 print("ayat_refs lama disalin ke config baru.")
         except Exception as e:
             print("Peringatan: gagal memuat ayat_refs lama:", e)
-    # =============================================
+    # ===============================================
 
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
 
     print("Berhasil menulis config/next_article.json dari Space.")
-    print("Judul:", cfg.get("title", "(tanpa judul)") if isinstance(cfg, dict) else "(cfg bukan dict)")
+    print("Judul:", cfg.get("title", "(tanpa judul)"))
 
 
 if __name__ == "__main__":
