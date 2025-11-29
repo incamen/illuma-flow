@@ -21,7 +21,6 @@ def load_theme_text():
 
 def main():
     import requests
-
     HF_TOKEN = os.getenv("HF_TOKEN")
     if not HF_TOKEN:
         print("ERROR: HF_TOKEN tidak ditemukan di environment.")
@@ -31,34 +30,67 @@ def main():
     print("Tema yang dikirim ke Space:")
     print(theme_text)
 
-    # ============ Panggil API Space ============
+    # ===== try gradio_client first =====
+    result = None
     try:
         client = Client(SPACE_NAME, token=HF_TOKEN)
         result = client.predict(theme_text, api_name=API_NAME)
         print("Menggunakan gradio_client.Client --> OK")
     except Exception as e:
-        print("gradio_client.Client gagal, fallback HTTP:", repr(e))
+        print("gradio_client.Client gagal, akan coba fallback HTTP:", repr(e))
+
+    # ===== defensive handling: if result empty or invalid, try HTTP fallback =====
+    def try_http_fallback():
         api_url = f"https://api-inference.huggingface.co/spaces/{SPACE_NAME}/run/predict"
         headers = {"Authorization": f"Bearer {HF_TOKEN}", "Content-Type": "application/json"}
         payload = {"data": [theme_text], "api_name": API_NAME}
+        print("Mencoba fallback HTTP ke:", api_url)
         resp = requests.post(api_url, headers=headers, json=payload, timeout=60)
         resp.raise_for_status()
-        result = resp.json()
-    # ============================================
+        return resp.json()
 
-    # ===== parse output (tuple / str / dict) =====
-    if isinstance(result, tuple):
-        result = result[0]
+    # if result is None or empty tuple/list, or otherwise suspicious -> fallback
+    need_fallback = False
+    if result is None:
+        need_fallback = True
+        print("Result dari gradio_client kosong (None).")
+    else:
+        print("Raw result type:", type(result), " repr:", repr(result)[:500])
+        if isinstance(result, (tuple, list)) and len(result) == 0:
+            need_fallback = True
+            print("Result adalah tuple/list kosong -> fallback needed.")
+        # some gradio_client returns ("" ,) or (None,) etc — handle below
 
+    if need_fallback:
+        try:
+            result = try_http_fallback()
+            print("Fallback HTTP -> OK")
+            print("Raw fallback result type:", type(result), " repr:", repr(result)[:500])
+        except Exception as e:
+            raise RuntimeError(f"Both gradio_client and HTTP fallback gagal: {e}")
+
+    # ===== normalize result: tuple/list -> take first element if present =====
+    if isinstance(result, (tuple, list)):
+        if len(result) > 0:
+            result = result[0]
+            print("Mengambil elemen pertama dari tuple/list result.")
+        else:
+            # should not reach here because we fallback earlier, but guard anyway
+            raise ValueError("Result tuple/list kosong setelah fallback — tidak dapat melanjutkan.")
+
+    # ===== parse result =====
+    cfg = None
     if isinstance(result, str):
-        cfg = json.loads(result)
+        try:
+            cfg = json.loads(result)
+        except Exception as e:
+            raise ValueError(f"Response string tidak valid JSON: {e}\nResponse repr: {repr(result)[:1000]}")
     elif isinstance(result, dict):
         cfg = result
     else:
-        raise ValueError(f"Tidak dapat mengurai response Space: {type(result)}")
-    # ============================================
+        raise ValueError(f"Tidak dapat mengurai response Space: {type(result)} repr: {repr(result)[:500]}")
 
-    # ============ pertahankan ayat_refs ============
+    # ==== pertahankan ayat_refs lama jika ada ====
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
@@ -68,7 +100,7 @@ def main():
                 print("ayat_refs lama disalin ke config baru.")
         except Exception as e:
             print("Peringatan: gagal memuat ayat_refs lama:", e)
-    # ===============================================
+    # =============================================
 
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
