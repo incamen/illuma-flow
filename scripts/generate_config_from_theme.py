@@ -8,9 +8,8 @@ ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
 
-# Nama Space sesuai yang tertulis di docs: Penerang/Teuing-Ah
 SPACE_NAME = "Penerang/Teuing-Ah"
-API_NAME = "/generate_config"  # dari API documentation di tab App
+API_NAME = "/generate_config"  # dari docs API Space
 
 
 def load_theme_text():
@@ -31,23 +30,30 @@ def main():
         api_name=API_NAME,
     )
 
+    # Space mengembalikan string JSON
     if isinstance(result, str):
         cfg = json.loads(result)
     else:
         cfg = result
 
-    # Pertahankan ayat_refs lama jika sudah ada
+    # ==== PERTAHANKAN ayat_refs LAMA JIKA ADA ====
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
                 old_cfg = json.load(f_old)
             if "ayat_refs" in old_cfg and "ayat_refs" not in cfg:
                 cfg["ayat_refs"] = old_cfg["ayat_refs"]
+                print("ayat_refs lama disalin ke config baru.")
         except Exception as e:
             print("Peringatan: gagal memuat ayat_refs lama:", e)
+    # =============================================
 
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
 
     print("Berhasil menulis config/next_article.json dari Space.")
     print("Judul:", cfg.get("title", "(tanpa judul)"))
+
+
+if __name__ == "__main__":
+    main()
