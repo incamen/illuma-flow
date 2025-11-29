@@ -9,7 +9,7 @@ THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
 
 SPACE_NAME = "Penerang/Teuing-Ah"
-API_NAME = "/api_generate"  # nama endpoint di Space
+API_NAME = "/generate_config"  # nama endpoint di Space
 
 
 def load_theme_text():
