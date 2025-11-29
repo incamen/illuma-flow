@@ -29,7 +29,7 @@ def main():
     print("Tema yang dikirim ke Space:")
     print(theme_text)
 
-    client = Client(SPACE_NAME, hf_token=HF_TOKEN)   # <── WAJIB
+    client = Client(SPACE_NAME, token=HF_TOKEN)   # <── WAJIB
 
     result = client.predict(
         theme_text=theme_text,
