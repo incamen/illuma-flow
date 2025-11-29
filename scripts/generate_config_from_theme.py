@@ -1,6 +1,6 @@
 import os
 import json
-from gradio_client import Client
+import requests
 
 SCRIPT_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
@@ -9,7 +9,7 @@ THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
 
 SPACE_NAME = "Penerang/Teuing-Ah"
-API_NAME = "/generate_config"  # nama endpoint di Space
+FUNCTION_NAME = "generate_config"     # sesuai gradio 6: api/invoke/<name>
 
 
 def load_theme_text():
@@ -19,93 +19,100 @@ def load_theme_text():
         return f.read().strip()
 
 
+def call_gradio6_function(theme_text, HF_TOKEN):
+    """
+    Memanggil custom function di Gradio 6 via endpoint:
+    POST /api/invoke/<function_name>
+    """
+    url = f"https://huggingface.co/spaces/{SPACE_NAME}/api/invoke/{FUNCTION_NAME}"
+
+    headers = {
+        "Authorization": f"Bearer {HF_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "data": {
+            "text": theme_text
+        }
+    }
+
+    print("Mengirim request ke:", url)
+
+    resp = requests.post(url, headers=headers, json=payload, timeout=90)
+    resp.raise_for_status()
+
+    raw = resp.json()
+    print("Raw response:", str(raw)[:500])
+
+    if "data" not in raw:
+        raise ValueError("Response tidak memiliki field 'data'")
+
+    return raw["data"]
+
+
+def normalize_result(result):
+    """
+    Gradio 6 selalu return:
+    { "data": [ ... ] }
+    Jadi result sudah berupa array, kita ambil elemen pertama.
+    """
+    if isinstance(result, list) and len(result) > 0:
+        result = result[0]
+    else:
+        raise ValueError(
+            f"Format result salah. Hasil: {repr(result)[:300]}"
+        )
+
+    # Convert JSON string -> dict
+    if isinstance(result, str):
+        try:
+            return json.loads(result)
+        except Exception as e:
+            raise ValueError(f"String bukan JSON valid: {e}")
+
+    if isinstance(result, dict):
+        return result
+
+    raise ValueError(f"Format elemen tidak dikenali: {type(result)}")
+
+
 def main():
-    import requests
     HF_TOKEN = os.getenv("HF_TOKEN")
     if not HF_TOKEN:
-        print("ERROR: HF_TOKEN tidak ditemukan di environment.")
+        print("ERROR: Tidak ada HF_TOKEN di environment.")
         return
 
     theme_text = load_theme_text()
-    print("Tema yang dikirim ke Space:")
-    print(theme_text)
+    print("Tema yang dikirim ke Space:\n", theme_text, "\n")
 
-    # ===== try gradio_client first =====
-    result = None
+    # === Panggil Gradio 6 ===
     try:
-        client = Client(SPACE_NAME, token=HF_TOKEN)
-        result = client.predict(theme_text, api_name=API_NAME)
-        print("Menggunakan gradio_client.Client --> OK")
+        raw_data = call_gradio6_function(theme_text, HF_TOKEN)
     except Exception as e:
-        print("gradio_client.Client gagal, akan coba fallback HTTP:", repr(e))
+        print("Gagal memanggil Gradio 6:", repr(e))
+        return
 
-    # ===== defensive handling: if result empty or invalid, try HTTP fallback =====
-    def try_http_fallback():
-        api_url = f"https://api-inference.huggingface.co/spaces/{SPACE_NAME}/run/predict"
-        headers = {"Authorization": f"Bearer {HF_TOKEN}", "Content-Type": "application/json"}
-        payload = {"data": [theme_text], "api_name": API_NAME}
-        print("Mencoba fallback HTTP ke:", api_url)
-        resp = requests.post(api_url, headers=headers, json=payload, timeout=60)
-        resp.raise_for_status()
-        return resp.json()
+    # === Normalisasi ===
+    cfg = normalize_result(raw_data)
 
-    # if result is None or empty tuple/list, or otherwise suspicious -> fallback
-    need_fallback = False
-    if result is None:
-        need_fallback = True
-        print("Result dari gradio_client kosong (None).")
-    else:
-        print("Raw result type:", type(result), " repr:", repr(result)[:500])
-        if isinstance(result, (tuple, list)) and len(result) == 0:
-            need_fallback = True
-            print("Result adalah tuple/list kosong -> fallback needed.")
-        # some gradio_client returns ("" ,) or (None,) etc — handle below
-
-    if need_fallback:
-        try:
-            result = try_http_fallback()
-            print("Fallback HTTP -> OK")
-            print("Raw fallback result type:", type(result), " repr:", repr(result)[:500])
-        except Exception as e:
-            raise RuntimeError(f"Both gradio_client and HTTP fallback gagal: {e}")
-
-    # ===== normalize result: tuple/list -> take first element if present =====
-    if isinstance(result, (tuple, list)):
-        if len(result) > 0:
-            result = result[0]
-            print("Mengambil elemen pertama dari tuple/list result.")
-        else:
-            # should not reach here because we fallback earlier, but guard anyway
-            raise ValueError("Result tuple/list kosong setelah fallback — tidak dapat melanjutkan.")
-
-    # ===== parse result =====
-    cfg = None
-    if isinstance(result, str):
-        try:
-            cfg = json.loads(result)
-        except Exception as e:
-            raise ValueError(f"Response string tidak valid JSON: {e}\nResponse repr: {repr(result)[:1000]}")
-    elif isinstance(result, dict):
-        cfg = result
-    else:
-        raise ValueError(f"Tidak dapat mengurai response Space: {type(result)} repr: {repr(result)[:500]}")
-
-    # ==== pertahankan ayat_refs lama jika ada ====
+    # === Pertahankan ayat_refs lama ===
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
                 old_cfg = json.load(f_old)
+
             if "ayat_refs" in old_cfg and "ayat_refs" not in cfg:
                 cfg["ayat_refs"] = old_cfg["ayat_refs"]
-                print("ayat_refs lama disalin ke config baru.")
+                print("→ Menyalin ayat_refs dari config lama.")
         except Exception as e:
-            print("Peringatan: gagal memuat ayat_refs lama:", e)
-    # =============================================
+            print("Gagal membaca config lama:", e)
 
+    # === Simpan ===
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
 
-    print("Berhasil menulis config/next_article.json dari Space.")
+    print("\nBerhasil menulis config/next_article.json")
     print("Judul:", cfg.get("title", "(tanpa judul)"))
 
 
