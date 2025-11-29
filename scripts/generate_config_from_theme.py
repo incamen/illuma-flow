@@ -1,77 +1,70 @@
 import os
 import json
-import yaml
+import requests
 
 SCRIPT_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
+THEME_PATH = os.path.join(ROOT_DIR, "config", "next_theme.txt")
 CONFIG_PATH = os.path.join(ROOT_DIR, "config", "next_article.json")
-CONTENT_PATH = os.path.join(ROOT_DIR, "content", "next_post.html")
+
+SPACE_API = "https://Penerang-Teuing-Ah.hf.space/generate_config"  # REST API FastAPI kamu
 
 
-def load_generated_yaml_path():
-    """
-    next_article.json berisi:
-    {
-      "status": "success",
-      "file": "configs/Nama_File.yaml"
+def load_theme():
+    if not os.path.exists(THEME_PATH):
+        return {"title": "", "description": "", "author": ""}
+
+    with open(THEME_PATH, "r", encoding="utf-8") as f:
+        lines = f.read().strip().split("\n")
+
+    # Format file next_theme.txt:
+    # line 1 → title
+    # line 2 → description
+    # line 3 → author
+    return {
+        "title": lines[0] if len(lines) > 0 else "",
+        "description": lines[1] if len(lines) > 1 else "",
+        "author": lines[2] if len(lines) > 2 else ""
     }
-    """
-    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    return data.get("file"), data
 
 
-def load_yaml_file(path):
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+def call_space_rest_api(payload, token):
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    print("Mengirim request ke:", SPACE_API)
+    resp = requests.post(SPACE_API, headers=headers, json=payload, timeout=60)
+    resp.raise_for_status()
 
-
-def convert_yaml_to_html(cfg):
-    """
-    YAML kamu hanya berisi:
-      title
-      description
-      author
-    Jadi HTML disesuaikan untuk Blogger.
-    """
-    title = cfg.get("title", "")
-    desc = cfg.get("description", "")
-    author = cfg.get("author", "")
-
-    html = f"""
-    <h1>{title}</h1>
-    <p><strong>Author:</strong> {author}</p>
-    <p>{desc}</p>
-    """.strip()
-
-    return html
+    return resp.json()
 
 
 def main():
-    yaml_path, raw_json = load_generated_yaml_path()
-
-    if not yaml_path:
-        print("ERROR: next_article.json tidak berisi path file YAML.")
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    if not HF_TOKEN:
+        print("ERROR: HF_TOKEN tidak ditemukan di environment.")
         return
 
-    full_yaml_path = os.path.join(ROOT_DIR, yaml_path)
+    theme = load_theme()
 
-    if not os.path.exists(full_yaml_path):
-        print("ERROR: File YAML tidak ditemukan:", full_yaml_path)
+    print("Theme loaded:")
+    print(theme)
+
+    # === Panggil REST API FastAPI Space ===
+    try:
+        response = call_space_rest_api(theme, HF_TOKEN)
+    except Exception as e:
+        print("Gagal memanggil Space:", e)
         return
 
-    print("Memuat YAML:", full_yaml_path)
-    data = load_yaml_file(full_yaml_path)
+    print("Response:")
+    print(response)
 
-    html = convert_yaml_to_html(data)
+    # Simpan hasil ke next_article.json
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump(response, f, ensure_ascii=False, indent=2)
 
-    os.makedirs(os.path.dirname(CONTENT_PATH), exist_ok=True)
-    with open(CONTENT_PATH, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    print("Berhasil generate:", CONTENT_PATH)
+    print("Config berhasil ditulis:", CONFIG_PATH)
 
 
 if __name__ == "__main__":
