@@ -36,7 +36,7 @@ def main():
     else:
         cfg = result
 
-    # Tambahan: bawa ayat_refs lama kalau ada
+    # Pertahankan ayat_refs lama jika sudah ada
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f_old:
